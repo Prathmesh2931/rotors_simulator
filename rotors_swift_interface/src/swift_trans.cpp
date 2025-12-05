@@ -26,7 +26,7 @@ SwiftTrans::SwiftTrans() : Node("swift_interface") {
     this->get_parameter_or("v_yaw_step", v_yaw_step, 0.05);
     this->get_parameter_or("thrust_weight_offset_newtons",thrust_weight_offset_newtons, 14.896);
 
-    swift_sub = this->create_subscription<swift_msgs::msg::SwiftMsgs>("/drone_command", 50, std::bind(&SwiftTrans::TransCallback, this, std::placeholders::_1));
+    swift_sub = this->create_subscription<swift_msgs::msg::SwiftMsgs>("drone_command", 50, std::bind(&SwiftTrans::TransCallback, this, std::placeholders::_1));
 
 }
 

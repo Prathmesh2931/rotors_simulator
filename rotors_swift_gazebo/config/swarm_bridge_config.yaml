@@ -1,0 +1,59 @@
+---
+# Master Drone Topics
+- ros_topic_name: "/master/rotors/command/motor_speed"
+  gz_topic_name: "/master_rotors/command/motor_speed"
+  ros_type_name: "actuator_msgs/msg/Actuators"
+  gz_type_name: "ignition.msgs.Actuators"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/master/rotors/odometry"
+  gz_topic_name: "/model/master/odometry"
+  ros_type_name: "nav_msgs/msg/Odometry" 
+  gz_type_name: "ignition.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+# Slave1 Drone Topics
+- ros_topic_name: "/slave1/rotors/command/motor_speed"
+  gz_topic_name: "/slave1_rotors/command/motor_speed"
+  ros_type_name: "actuator_msgs/msg/Actuators"
+  gz_type_name: "ignition.msgs.Actuators"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/slave1/rotors/odometry"
+  gz_topic_name: "/model/slave1/odometry"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "ignition.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+# Slave2 Drone Topics  
+- ros_topic_name: "/slave2/rotors/command/motor_speed"
+  gz_topic_name: "/slave2_rotors/command/motor_speed"
+  ros_type_name: "actuator_msgs/msg/Actuators"
+  gz_type_name: "ignition.msgs.Actuators"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/slave2/rotors/odometry"
+  gz_topic_name: "/model/slave2/odometry"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "ignition.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+# Slave3 Drone Topics
+- ros_topic_name: "/slave3/rotors/command/motor_speed"
+  gz_topic_name: "/slave3_rotors/command/motor_speed"
+  ros_type_name: "actuator_msgs/msg/Actuators"
+  gz_type_name: "ignition.msgs.Actuators"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/slave3/rotors/odometry"
+  gz_topic_name: "/model/slave3/odometry"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "ignition.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+# Clock (shared)
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: BIDIRECTIONAL
