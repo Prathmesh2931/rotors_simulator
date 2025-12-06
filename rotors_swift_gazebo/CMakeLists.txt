@@ -30,9 +30,20 @@ install(
   DESTINATION share/${PROJECT_NAME}/worlds
 )
 
+install(
+  DIRECTORY src/
+  DESTINATION share/${PROJECT_NAME}/src
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+install(
+  PROGRAMS
+  src/swarm_controller_keyboard.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 ament_package()

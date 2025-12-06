@@ -33,10 +33,10 @@ def generate_launch_description():
 
     # Swarm config
     swarm_config = [
-        ('master', 'master_swift_pico.sdf', 0.0, 0.0),
+        ('master', 'master_swift_pico.sdf', 0.0, 2.0),
         ('slave1', 'slave1_swift_pico.sdf', 1.0, 1.0),
         ('slave2', 'slave2_swift_pico.sdf', -1.0, 1.0),
-        ('slave3', 'slave3_swift_pico.sdf', 0.0, -1.0)
+        ('slave3', 'slave3_swift_pico.sdf', -0.0, -0.0)
     ]
 
     launch_entities = [gz_sim, bridge]

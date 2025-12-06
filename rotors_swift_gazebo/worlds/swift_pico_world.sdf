@@ -99,7 +99,7 @@
       </link>
     </model>
   
-    <model name="camera">
+    <!-- <model name="camera">
       <static>true</static>
       <pose>0 0 20 0 1.57 0</pose>
       <link name="link">
@@ -144,7 +144,7 @@
           <topic>camera</topic>
         </sensor>
       </link>
-    </model>
+    </model> -->
 
     </world>
 </sdf>
