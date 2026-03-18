@@ -1,4 +1,4 @@
-# AUTO-GENERATED at launch time — edit robot.yaml instead
+# generated at launch time — edit robots.yaml instead
 ---
 - direction: ROS_TO_GZ
   gz_topic_name: /master_rotors/command/motor_speed

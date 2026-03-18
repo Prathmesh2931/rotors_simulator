@@ -1,245 +1,152 @@
 #!/usr/bin/env python3
+"""
+Keyboard controller for swarm_demo.
+Master drone is controlled via keyboard. All other drones (read from
+robots.yaml) mirror the master command automatically.
 
-import rclpy
-from rclpy.node import Node
-from swift_msgs.msg import SwiftMsgs
-import sys
+Controls:
+    t / g       takeoff / land
+    h           hover (lock current altitude)
+    i / k       forward / backward
+    j / l       left / right
+    arrow up/dn throttle up / down
+    s           emergency hover
+    q           quit
+"""
+
+import os
 import select
-import tty
+import sys
 import termios
 import threading
+import tty
 
-class MasterKeyboardController(Node):
-    """Master drone keyboard controller"""
+import rclpy
+import yaml
+from ament_index_python.packages import get_package_share_directory
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.node import Node
+from swift_msgs.msg import SwiftMsgs
+
+
+def _load_slave_names():
+    """Read robots.yaml and return all robot names except master."""
+    cfg = os.path.join(
+        get_package_share_directory("rotors_swift_gazebo"),
+        "config", "robots.yaml"
+    )
+    with open(cfg) as f:
+        fleet = yaml.safe_load(f)
+    names = [r["name"] for r in fleet.get("robots", [])]
+    return [n for n in names if n != "master"]
+
+
+class MasterController(Node):
     def __init__(self):
-        super().__init__('master_keyboard_controller')
-        
-        # Publisher for master only
-        self.master_pub = self.create_publisher(SwiftMsgs, '/master/rotors/drone_command', 10)
-        
-        # Tuned control values
-        self.hover_throttle = 1520
-        self.takeoff_throttle = 1600
-        self.land_throttle = 1200
-        
-        self.roll_increment = 100
-        self.pitch_increment = 100
-        
-        # Current command
-        self.cmd = SwiftMsgs()
-        self.reset_command()
-        self.cmd.rc_throttle = 1500  # Start grounded
-        
-        # Flying state
-        self.is_flying = False
-        
-        # Simple instructions
-        print("\n" + "="*50)
-        print("MASTER CONTROLLER")
-        print("="*50)
-        print("i=Forward  k=Backward  j=Left  l=Right")
-        print("↑=Up  ↓=Down  h=Hover  s=Stop")
-        print("t=Takeoff  g=Land  q=Quit")
-        print("="*50)
-        print("TIP: Press 'h' anytime to lock hover!")
-        print("="*50 + "\n")
-        
-        # Keyboard thread
-        self.keyboard_thread = threading.Thread(target=self.keyboard_listener)
-        self.keyboard_thread.daemon = True
-        self.keyboard_thread.start()
-        
-        # Publish at 10Hz
-        self.timer = self.create_timer(0.1, self.publish_commands)
+        super().__init__("master_keyboard_controller")
 
-    def reset_command(self):
-        """Reset to neutral hover"""
-        self.cmd.rc_roll = 1500
-        self.cmd.rc_pitch = 1500
-        self.cmd.rc_yaw = 1500
-        self.cmd.rc_throttle = self.hover_throttle
-        self.cmd.rc_aux1 = 0
-        self.cmd.rc_aux2 = 0
-        self.cmd.rc_aux3 = 0
-        self.cmd.rc_aux4 = 1500
-        self.cmd.drone_index = 0
+        self.pub = self.create_publisher(SwiftMsgs, "/master/rotors/drone_command", 10)
 
-    def keyboard_listener(self):
-        """Listen for keyboard"""
-        old_settings = termios.tcgetattr(sys.stdin)
-        
+        self.hover_thr    = 1520
+        self.takeoff_thr  = 1600
+        self.land_thr     = 1200
+        self.roll_step    = 100
+        self.pitch_step   = 100
+
+        self.cmd        = self._neutral(self.hover_thr)
+        self.is_flying  = False
+
+        print("\n  MASTER CONTROLLER")
+        print("  t=takeoff  g=land  h=hover  s=stop  q=quit")
+        print("  i/k=fwd/bk  j/l=left/right  arrows=alt\n")
+
+        t = threading.Thread(target=self._kb_loop, daemon=True)
+        t.start()
+
+        self.create_timer(0.1, self._publish)
+
+    def _neutral(self, throttle=1500):
+        cmd = SwiftMsgs()
+        cmd.rc_roll     = 1500
+        cmd.rc_pitch    = 1500
+        cmd.rc_yaw      = 1500
+        cmd.rc_throttle = throttle
+        cmd.rc_aux4     = 1500
+        cmd.drone_index = 0
+        return cmd
+
+    def _kb_loop(self):
+        old = termios.tcgetattr(sys.stdin)
         try:
             tty.setraw(sys.stdin.fileno())
-            
             while rclpy.ok():
                 if select.select([sys.stdin], [], [], 0.1)[0]:
-                    key = sys.stdin.read(1).lower()
-                    self.process_key(key)
-                    
-        except Exception as e:
-            print(f"Error: {e}")
+                    self._handle(sys.stdin.read(1).lower())
         finally:
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old)
 
-    def process_key(self, key):
-        """Process keyboard input"""
-        
-        if key == 'i':  # Forward - momentary
-            self.cmd.rc_roll = 1500
-            self.cmd.rc_pitch = 1500 - self.pitch_increment
-            self.cmd.rc_yaw = 1500
-            self.cmd.rc_throttle = self.hover_throttle
-            print("Forward")
-            
-        elif key == 'k':  # Backward - momentary
-            self.cmd.rc_roll = 1500
-            self.cmd.rc_pitch = 1500 + self.pitch_increment
-            self.cmd.rc_yaw = 1500
-            self.cmd.rc_throttle = self.hover_throttle
-            print("Backward")
-            
-        elif key == 'j':  # Left - momentary
-            self.cmd.rc_roll = 1500 - self.roll_increment
-            self.cmd.rc_pitch = 1500
-            self.cmd.rc_yaw = 1500
-            self.cmd.rc_throttle = self.hover_throttle
-            print("Left")
-            
-        elif key == 'l':  # Right - momentary
-            self.cmd.rc_roll = 1500 + self.roll_increment
-            self.cmd.rc_pitch = 1500
-            self.cmd.rc_yaw = 1500
-            self.cmd.rc_throttle = self.hover_throttle
-            print("Right")
-            
-        elif key == '\x1b':  # Arrow keys
-            next_chars = sys.stdin.read(2)
-            if next_chars == '[A':  # Up - continuous until hover
-                self.cmd.rc_roll = 1500
-                self.cmd.rc_pitch = 1500
-                self.cmd.rc_yaw = 1500
-                self.cmd.rc_throttle = self.takeoff_throttle
-                print("Up")
-            elif next_chars == '[B':  # Down - continuous until hover
-                self.cmd.rc_roll = 1500
-                self.cmd.rc_pitch = 1500
-                self.cmd.rc_yaw = 1500
-                self.cmd.rc_throttle = self.land_throttle
-                print("Down")
-                
-        elif key == 't':  # Takeoff - switches to hover after climb
-            self.cmd.rc_roll = 1500
-            self.cmd.rc_pitch = 1500
-            self.cmd.rc_yaw = 1500
-            self.cmd.rc_throttle = self.takeoff_throttle
-            self.is_flying = True
-            print("TAKEOFF - Press 'h' to stop climbing")
-            
-        elif key == 'g':  # Land - switches to hover after descent
-            self.cmd.rc_roll = 1500
-            self.cmd.rc_pitch = 1500
-            self.cmd.rc_yaw = 1500
-            self.cmd.rc_throttle = self.land_throttle
-            print("LANDING - Press 'h' to stop descending")
-            
-        elif key == 'h':  # Hover - LOCKS current altitude
-            self.cmd.rc_roll = 1500
-            self.cmd.rc_pitch = 1500
-            self.cmd.rc_yaw = 1500
-            self.cmd.rc_throttle = self.hover_throttle
-            self.is_flying = True  # Ensure it stays in flying mode
-            print("HOVER LOCKED")
-            
-        elif key == 's':  # STOP - emergency hover
-            self.cmd.rc_roll = 1500
-            self.cmd.rc_pitch = 1500
-            self.cmd.rc_yaw = 1500
-            self.cmd.rc_throttle = self.hover_throttle
-            self.is_flying = True
-            print("EMERGENCY HOVER")
-            
-        elif key == 'q':  # Quit
-            print("Shutting down...")
-            rclpy.shutdown()
+    def _handle(self, key):
+        c = self.cmd
+        if key == 'i':
+            c.rc_pitch = 1500 - self.pitch_step;  print("forward")
+        elif key == 'k':
+            c.rc_pitch = 1500 + self.pitch_step;  print("backward")
+        elif key == 'j':
+            c.rc_roll  = 1500 - self.roll_step;   print("left")
+        elif key == 'l':
+            c.rc_roll  = 1500 + self.roll_step;   print("right")
+        elif key == 't':
+            c = self._neutral(self.takeoff_thr);  self.is_flying = True;  print("takeoff")
+        elif key == 'g':
+            c = self._neutral(self.land_thr);     print("landing")
+        elif key == 'h':
+            c = self._neutral(self.hover_thr);    self.is_flying = True;  print("hover")
+        elif key == 's':
+            c = self._neutral(self.hover_thr);    self.is_flying = True;  print("stop")
+        elif key == '\x1b':
+            nxt = sys.stdin.read(2)
+            if nxt == '[A':
+                c.rc_throttle = self.takeoff_thr; print("up")
+            elif nxt == '[B':
+                c.rc_throttle = self.land_thr;    print("down")
+        elif key == 'q':
+            print("quit"); rclpy.shutdown(); return
+        self.cmd = c
 
-    def publish_commands(self):
-        """Publish master command"""
+    def _publish(self):
         if self.is_flying:
-            self.master_pub.publish(self.cmd)
+            self.pub.publish(self.cmd)
         else:
-            # Keep grounded when not flying
-            grounded = SwiftMsgs()
-            grounded.rc_roll = 1500
-            grounded.rc_pitch = 1500
-            grounded.rc_yaw = 1500
-            grounded.rc_throttle = 1500
-            grounded.rc_aux1 = 0
-            grounded.rc_aux2 = 0
-            grounded.rc_aux3 = 0
-            grounded.rc_aux4 = 1500
-            grounded.drone_index = 0
-            
-            self.master_pub.publish(grounded)
+            self.pub.publish(self._neutral())
 
 
 class SlaveFollower(Node):
-    """Slave drone that follows master commands"""
-    def __init__(self, slave_name):
-        super().__init__(f'{slave_name}_follower')
-        
-        self.slave_name = slave_name
-        
-        # Subscribe to master commands
-        self.master_sub = self.create_subscription(
-            SwiftMsgs,
-            '/master/rotors/drone_command',
-            self.master_command_callback,
-            10
-        )
-        
-        # Publisher for this slave
-        self.slave_pub = self.create_publisher(
-            SwiftMsgs,
-            f'/{slave_name}/rotors/drone_command',
-            10
-        )
-        
-        print(f"{slave_name} following master commands...")
-
-    def master_command_callback(self, msg):
-        """Receive master command and publish to slave"""
-        # Simply republish the same command to this slave
-        self.slave_pub.publish(msg)
+    """Mirrors master commands to one slave drone."""
+    def __init__(self, name):
+        super().__init__(f"{name}_follower")
+        self.pub = self.create_publisher(SwiftMsgs, f"/{name}/rotors/drone_command", 10)
+        self.create_subscription(SwiftMsgs, "/master/rotors/drone_command", self.pub.publish, 10)
+        print(f"  {name} -> following master")
 
 
-def main(args=None):
-    rclpy.init(args=args)
-    
+def main():
+    rclpy.init()
+
+    slaves = _load_slave_names()
+    print(f"\n[swarm_ctrl] master + {len(slaves)} slave(s): {slaves}")
+
+    executor = MultiThreadedExecutor()
+    executor.add_node(MasterController())
+    for name in slaves:
+        executor.add_node(SlaveFollower(name))
+
     try:
-        # Create master controller
-        master_controller = MasterKeyboardController()
-        
-        # Create slave followers
-        slave1_follower = SlaveFollower('slave1')
-        slave2_follower = SlaveFollower('slave2')
-        slave3_follower = SlaveFollower('slave3')
-        
-        # Create executor to spin all nodes
-        executor = rclpy.executors.MultiThreadedExecutor()
-        executor.add_node(master_controller)
-        executor.add_node(slave1_follower)
-        executor.add_node(slave2_follower)
-        executor.add_node(slave3_follower)
-        
-        print("\n✓ Master controller ready")
-        print("✓ All slaves listening to master\n")
-        
         executor.spin()
-        
     except KeyboardInterrupt:
-        print("\nStopped")
+        pass
     finally:
         rclpy.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
