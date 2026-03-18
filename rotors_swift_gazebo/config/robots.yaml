@@ -1,0 +1,43 @@
+bridge_topics:
+- direction: ROS_TO_GZ
+  gz_template: /{name}_rotors/command/motor_speed
+  gz_type: ignition.msgs.Actuators
+  ros_template: /{name}/rotors/command/motor_speed
+  ros_type: actuator_msgs/msg/Actuators
+- direction: GZ_TO_ROS
+  gz_template: /{name}_navsat
+  gz_type: ignition.msgs.NavSat
+  ros_template: /{name}/navsat
+  ros_type: sensor_msgs/msg/NavSatFix
+- direction: GZ_TO_ROS
+  gz_template: /model/{name}/odometry
+  gz_type: ignition.msgs.Odometry
+  ros_template: /{name}/rotors/odometry
+  ros_type: nav_msgs/msg/Odometry
+robots:
+- name: master
+  sdf: swift_pico_template.sdf
+  x: 0.0
+  y: 2.0
+  z: 0.2
+- name: slave1
+  sdf: swift_pico_template.sdf
+  x: 1.0
+  y: 1.0
+  z: 0.2
+- name: slave2
+  sdf: swift_pico_template.sdf
+  x: -1.0
+  y: 1.0
+  z: 0.2
+- name: slave3
+  sdf: swift_pico_template.sdf
+  x: 0.0
+  y: 0.0
+  z: 0.2
+shared_bridge_topics:
+- direction: BIDIRECTIONAL
+  gz_topic_name: /clock
+  gz_type_name: gz.msgs.Clock
+  ros_topic_name: /clock
+  ros_type_name: rosgraph_msgs/msg/Clock

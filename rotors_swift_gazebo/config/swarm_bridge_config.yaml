@@ -1,83 +1,67 @@
+# AUTO-GENERATED at launch time — edit robot.yaml instead
 ---
-# Master Drone Topics
-- ros_topic_name: "/master/rotors/command/motor_speed"
-  gz_topic_name: "/master_rotors/command/motor_speed"
-  ros_type_name: "actuator_msgs/msg/Actuators"
-  gz_type_name: "ignition.msgs.Actuators"
-  direction: ROS_TO_GZ
-
-- ros_topic_name: "/master/navsat"
-  gz_topic_name: "/master_navsat"
-  ros_type_name: "sensor_msgs/msg/NavSatFix"
-  gz_type_name: "ignition.msgs.NavSat"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/master/rotors/odometry"
-  gz_topic_name: "/model/master/odometry"
-  ros_type_name: "nav_msgs/msg/Odometry" 
-  gz_type_name: "ignition.msgs.Odometry"
-  direction: GZ_TO_ROS
-
-# Slave1 Drone Topics
-- ros_topic_name: "/slave1/rotors/command/motor_speed"
-  gz_topic_name: "/slave1_rotors/command/motor_speed"
-  ros_type_name: "actuator_msgs/msg/Actuators"
-  gz_type_name: "ignition.msgs.Actuators"
-  direction: ROS_TO_GZ
-
-- ros_topic_name: "/slave1/navsat"
-  gz_topic_name: "/slave1_navsat"
-  ros_type_name: "sensor_msgs/msg/NavSatFix"
-  gz_type_name: "ignition.msgs.NavSat"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/slave1/rotors/odometry"
-  gz_topic_name: "/model/slave1/odometry"
-  ros_type_name: "nav_msgs/msg/Odometry"
-  gz_type_name: "ignition.msgs.Odometry"
-  direction: GZ_TO_ROS
-
-# Slave2 Drone Topics  
-- ros_topic_name: "/slave2/rotors/command/motor_speed"
-  gz_topic_name: "/slave2_rotors/command/motor_speed"
-  ros_type_name: "actuator_msgs/msg/Actuators"
-  gz_type_name: "ignition.msgs.Actuators"
-  direction: ROS_TO_GZ
-
-- ros_topic_name: "/slave2/navsat"
-  gz_topic_name: "/slave2_navsat"
-  ros_type_name: "sensor_msgs/msg/NavSatFix"
-  gz_type_name: "ignition.msgs.NavSat"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/slave2/rotors/odometry"
-  gz_topic_name: "/model/slave2/odometry"
-  ros_type_name: "nav_msgs/msg/Odometry"
-  gz_type_name: "ignition.msgs.Odometry"
-  direction: GZ_TO_ROS
-
-# Slave3 Drone Topics
-- ros_topic_name: "/slave3/rotors/command/motor_speed"
-  gz_topic_name: "/slave3_rotors/command/motor_speed"
-  ros_type_name: "actuator_msgs/msg/Actuators"
-  gz_type_name: "ignition.msgs.Actuators"
-  direction: ROS_TO_GZ
-
-- ros_topic_name: "/slave3/navsat"
-  gz_topic_name: "/slave3_navsat"
-  ros_type_name: "sensor_msgs/msg/NavSatFix"
-  gz_type_name: "ignition.msgs.NavSat"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/slave3/rotors/odometry"
-  gz_topic_name: "/model/slave3/odometry"
-  ros_type_name: "nav_msgs/msg/Odometry"
-  gz_type_name: "ignition.msgs.Odometry"
-  direction: GZ_TO_ROS
-
-# Clock (shared)
-- ros_topic_name: "/clock"
-  gz_topic_name: "/clock"
-  ros_type_name: "rosgraph_msgs/msg/Clock"
-  gz_type_name: "gz.msgs.Clock"
-  direction: BIDIRECTIONAL
+- direction: ROS_TO_GZ
+  gz_topic_name: /master_rotors/command/motor_speed
+  gz_type_name: ignition.msgs.Actuators
+  ros_topic_name: /master/rotors/command/motor_speed
+  ros_type_name: actuator_msgs/msg/Actuators
+- direction: GZ_TO_ROS
+  gz_topic_name: /master_navsat
+  gz_type_name: ignition.msgs.NavSat
+  ros_topic_name: /master/navsat
+  ros_type_name: sensor_msgs/msg/NavSatFix
+- direction: GZ_TO_ROS
+  gz_topic_name: /model/master/odometry
+  gz_type_name: ignition.msgs.Odometry
+  ros_topic_name: /master/rotors/odometry
+  ros_type_name: nav_msgs/msg/Odometry
+- direction: ROS_TO_GZ
+  gz_topic_name: /slave1_rotors/command/motor_speed
+  gz_type_name: ignition.msgs.Actuators
+  ros_topic_name: /slave1/rotors/command/motor_speed
+  ros_type_name: actuator_msgs/msg/Actuators
+- direction: GZ_TO_ROS
+  gz_topic_name: /slave1_navsat
+  gz_type_name: ignition.msgs.NavSat
+  ros_topic_name: /slave1/navsat
+  ros_type_name: sensor_msgs/msg/NavSatFix
+- direction: GZ_TO_ROS
+  gz_topic_name: /model/slave1/odometry
+  gz_type_name: ignition.msgs.Odometry
+  ros_topic_name: /slave1/rotors/odometry
+  ros_type_name: nav_msgs/msg/Odometry
+- direction: ROS_TO_GZ
+  gz_topic_name: /slave2_rotors/command/motor_speed
+  gz_type_name: ignition.msgs.Actuators
+  ros_topic_name: /slave2/rotors/command/motor_speed
+  ros_type_name: actuator_msgs/msg/Actuators
+- direction: GZ_TO_ROS
+  gz_topic_name: /slave2_navsat
+  gz_type_name: ignition.msgs.NavSat
+  ros_topic_name: /slave2/navsat
+  ros_type_name: sensor_msgs/msg/NavSatFix
+- direction: GZ_TO_ROS
+  gz_topic_name: /model/slave2/odometry
+  gz_type_name: ignition.msgs.Odometry
+  ros_topic_name: /slave2/rotors/odometry
+  ros_type_name: nav_msgs/msg/Odometry
+- direction: ROS_TO_GZ
+  gz_topic_name: /slave3_rotors/command/motor_speed
+  gz_type_name: ignition.msgs.Actuators
+  ros_topic_name: /slave3/rotors/command/motor_speed
+  ros_type_name: actuator_msgs/msg/Actuators
+- direction: GZ_TO_ROS
+  gz_topic_name: /slave3_navsat
+  gz_type_name: ignition.msgs.NavSat
+  ros_topic_name: /slave3/navsat
+  ros_type_name: sensor_msgs/msg/NavSatFix
+- direction: GZ_TO_ROS
+  gz_topic_name: /model/slave3/odometry
+  gz_type_name: ignition.msgs.Odometry
+  ros_topic_name: /slave3/rotors/odometry
+  ros_type_name: nav_msgs/msg/Odometry
+- direction: BIDIRECTIONAL
+  gz_topic_name: /clock
+  gz_type_name: gz.msgs.Clock
+  ros_topic_name: /clock
+  ros_type_name: rosgraph_msgs/msg/Clock
